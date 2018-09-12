@@ -16,5 +16,17 @@ CHIP PC {
     OUT out[16];
 
     PARTS:
-    // Put your code here:
+    // inc
+    Inc16(in=lastout, out=ilo);
+    Mux16(a=in, b=ilo, sel=inc, out=o1);
+
+    // load
+    Mux16(a=o1, b=in, sel=load, out=o2);
+
+    // reset
+    Mux16(a=o2, b=false, sel=reset, out=o3);
+
+    // Maybe write and then emit
+    Or8Way (in[0]=inc, in[1]=load, in[2]=reset, out=write);
+    Register(in=o3, load=write, out=out, out=lastout);
 }
