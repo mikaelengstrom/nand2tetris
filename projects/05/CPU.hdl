@@ -39,5 +39,55 @@ CHIP CPU {
         pc[15];          // address of next instruction
 
     PARTS:
-    // Put your code here:
+    Not(in=instruction[15], out=isA);
+    Not(in=isA, out=isC);
+
+    /* Destination decoding */
+    And(a=instruction[15], b=instruction[3], out=writeM);
+    And(a=instruction[15], b=instruction[4], out=writeD);
+    Or(a=isA, b=instruction[5], out=writeA);
+
+    /* JMP decoding */
+    And(a=instruction[0], b=aluOutGTZ, out=j0);
+    And(a=instruction[1], b=aluOutZ, out=j1);
+    And(a=instruction[2], b=aluOutLTZ, out=j2);
+
+    Or(a=j0, b=j1, out=jmp0);
+    Or(a=jmp0, b=j2, out=jmp1);
+    And(a=isC, b=jmp1, out=jump);
+
+
+    /* D Register*/
+    DRegister(in=aluOut, load=writeD, out=regDOut);
+
+    /* A Register*/
+    Mux16(a=aluOut, b=instruction, sel=isA, out=aluOutOrInst);
+    DRegister(in=aluOutOrInst, load=writeA, out=regAOut, out[0..14]=addressM);
+
+    Mux16(a=regAOut, b=inM, sel=instruction[12], out=regAOrMOut);
+
+    /* ALU */
+    ALU(
+      x=regDOut, /* D Register */
+      y=regAOrMOut, /* A Register | Memory */
+      /* Controlbits */
+      zx=instruction[11],
+      nx=instruction[10],
+      zy=instruction[9],
+      ny=instruction[8],
+      f=instruction[7],
+      no=instruction[6],
+
+      out=aluOut, out=outM,
+
+      zr=aluOutZ,
+      ng=aluOutLTZ
+    );
+    Or(a=aluOutZ, b=aluOutLTZ, out=aluOutLTE);
+    Not(in=aluOutLTE, out=aluOutGTZ);
+
+    /* PC */
+    Not(in=jump, out=notJump);
+    Or(a=notJump, b=isA, out=inc);
+    PC(in=regAOut, load=jump, inc=inc, reset=reset, out[0..14]=pc);
 }
