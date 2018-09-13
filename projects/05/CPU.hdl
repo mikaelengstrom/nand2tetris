@@ -62,7 +62,7 @@ CHIP CPU {
 
     /* A Register*/
     Mux16(a=aluOut, b=instruction, sel=isA, out=aluOutOrInst);
-    DRegister(in=aluOutOrInst, load=writeA, out=regAOut, out[0..14]=addressM);
+    ARegister(in=aluOutOrInst, load=writeA, out=regAOut, out[0..14]=addressM);
 
     Mux16(a=regAOut, b=inM, sel=instruction[12], out=regAOrMOut);
 
