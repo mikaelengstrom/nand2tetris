@@ -15,7 +15,7 @@ func assertEqual(t *testing.T, a interface{}, b interface{}, message string) {
 	t.Fatal(message)
 }
 
-func TestStripCommentsLineRemoveCommentsAndLeadingWhiteSpace(t *testing.T) {
+func TestStripComments(t *testing.T) {
 	if stripComments("   // hej") != "   " {
 		t.Error("Did not remove all whitespace or comments")
 	}
@@ -26,14 +26,15 @@ func TestStripCommentsLineRemoveCommentsAndLeadingWhiteSpace(t *testing.T) {
 	}
 
 	if res == "" {
-		t.Error("parseLine removed everything :)")
+		t.Error("stripCommentsAndWhitespace removed everything :)")
 	}
 }
 
 func TestParseAInstruction(t *testing.T) {
-	assertEqual(t, parseAInstruction("@1"), "0000000000000001", "")
-	assertEqual(t, parseAInstruction("@9"), "0000000000001001", "")
-	assertEqual(t, parseAInstruction("@32767"), "0111111111111111", "")
+	st := NewSymbolTable()
+	assertEqual(t, parseAInstruction("@1", st), "0000000000000001", "")
+	assertEqual(t, parseAInstruction("@9", st), "0000000000001001", "")
+	assertEqual(t, parseAInstruction("@32767", st), "0111111111111111", "")
 }
 
 func TestParseCInstruction(t *testing.T) {
@@ -89,4 +90,41 @@ func TestParseCInstruction(t *testing.T) {
 	assertEqual(t, parseCInstruction("M=M-D"), "1111000111001000", "")
 	assertEqual(t, parseCInstruction("M=D&M"), "1111000000001000", "")
 	assertEqual(t, parseCInstruction("M=D|M"), "1111010101001000", "")
+}
+
+func TestSymbolTableGetOrCreate(t *testing.T) {
+	st := NewSymbolTable()
+
+	assertEqual(t, st.GetOrCreate("R0"), 0, "")
+	assertEqual(t, st.GetOrCreate("hej"), 16, "")
+	assertEqual(t, st.GetOrCreate("hej2"), 17, "")
+}
+
+func TestSymbolTableAddLabel(t *testing.T) {
+	st := NewSymbolTable()
+
+	// Simulate appearnce before label declaration
+	st.GetOrCreate("WHATEVERLABEL")
+	st.AddLabel("WHATEVERLABEL", 1)
+
+	assertEqual(t, st.GetOrCreate("WHATEVERLABEL"), 1, "")
+}
+
+func TestSymbolTableMaybeReplaceSymbol(t *testing.T) {
+	st := NewSymbolTable()
+
+	// Simulate appearnce before label declaration
+	st.GetOrCreate("somevariable")
+	st.GetOrCreate("WHATEVERLABEL")
+	st.AddLabel("WHATEVERLABEL", 1)
+	st.MaybeReplaceSymbol("@somevariable")
+
+	v, _ := st.MaybeReplaceSymbol("@somevariable")
+	assertEqual(t, v, "@16", "")
+
+	v, _ = st.MaybeReplaceSymbol("@WHATEVERLABEL")
+	assertEqual(t, v, "@1", "")
+
+	v, _ = st.MaybeReplaceSymbol("@R0")
+	assertEqual(t, v, "@0", "")
 }
