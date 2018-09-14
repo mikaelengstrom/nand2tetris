@@ -11,18 +11,14 @@
 // "white" in every pixel;
 // the screen should remain fully clear as long as no key is pressed.
 
-// This program excpect R0 to be set to 8160 befor starting (the whole range of
-// the screen module)
-
 // Set variables
    @SCREEN
    D=A
    @address
    M=D
 
-// Get number of registers that the screen-module contains from R0
-   @R0
-   D=M
+   @8192 // 1024 * 8, whole range of the screen
+   D=A
    @length
    M=D
 
