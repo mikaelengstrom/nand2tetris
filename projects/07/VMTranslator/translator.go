@@ -53,16 +53,18 @@ func translateArithmetic(instruction Instruction) []string {
 
 			"@JMP-eq",
 			"D; JEQ",
-			"D=1",
+			"D=0",
 			"@JMP-end",
+			"0; JMP",
 			"(JMP-eq)",
-			"D=D-1",
+			"D=-1",
 
 			"(JMP-end)",
 			"@SP",
 			"A=M-1",
 			"A=A-1",
 			"M=D",
+
 			"D=A+1",
 			"@SP",
 			"M=D",
@@ -74,17 +76,116 @@ func translateArithmetic(instruction Instruction) []string {
 			"@SP",
 			"A=M",
 
-			"MD=D-M;",
-			"@JMP-lt",
-			"D; JEQ",
-			"D=1",
-			"(JMP-lt)",
-			"D=D-1",
+			"A=A-1",
+			"D=M",
+			"A=A-1",
+			"D=D-M;",
 
+			"@JMP-gt",
+			"D; JGT",
+			"D=0",
+			"@JMP-end",
+			"0; JMP",
+			"(JMP-gt)",
+			"D=-1",
+
+			"(JMP-end)",
 			"@SP",
-			"AM=M-1",
+			"A=M-1",
 			"A=A-1",
 			"M=D",
+
+			"D=A+1",
+			"@SP",
+			"M=D",
+		}
+
+	case ACGt:
+		return []string {
+			commentHeader(instruction),
+			"@SP",
+			"A=M",
+
+			"A=A-1",
+			"D=M",
+			"A=A-1",
+			"D=D-M;",
+
+			"@JMP-gt",
+			"D; JLT",
+			"D=0",
+			"@JMP-end",
+			"0; JMP",
+			"(JMP-gt)",
+			"D=-1",
+
+			"(JMP-end)",
+			"@SP",
+			"A=M-1",
+			"A=A-1",
+			"M=D",
+
+			"D=A+1",
+			"@SP",
+			"M=D",
+		}
+
+	case ACSub:
+		return []string {
+			commentHeader(instruction),
+			"@SP",
+			"AM=M-1",
+
+			"D=M",
+			"A=A-1",
+			"M=M-D",
+		}
+
+	case ACAnd:
+		return []string {
+			commentHeader(instruction),
+			"@SP",
+			"A=M",
+
+			"A=A-1",
+			"D=M",
+			"A=A-1",
+			"M=D&M",
+
+			"D=A",
+			"@SP",
+			"M=D+1",
+		}
+
+	case ACOr:
+		return []string {
+			commentHeader(instruction),
+			"@SP",
+			"AM=M-1",
+
+			"A=A-1",
+			"D=M",
+			"A=A+1",
+			"D=D|M",
+			"A=A-1",
+			"M=D",
+		}
+
+	case ACNeg:
+		return []string {
+			commentHeader(instruction),
+			"@SP",
+			"A=M-1",
+			"M=!M",
+			"M=M+1",
+		}
+
+	case ACNot:
+		return []string {
+			commentHeader(instruction),
+			"@SP",
+			"A=M-1",
+			"M=!M",
 		}
 	}
 
