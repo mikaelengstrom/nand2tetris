@@ -23,20 +23,72 @@ func translatePush(instruction Instruction) []string {
 }
 
 func translateArithmetic(instruction Instruction) []string {
-	return []string {
-		commentHeader(instruction),
-		"@SP",
-		"A=M",
+	switch stringToArithmeticCommand(instruction.arg1) {
+	case ACAdd:
+		return []string {
+			commentHeader(instruction),
+			"@SP",
+			"A=M",
 
-		"A=A-1",
-		"D=M",
-		"A=A-1",
-		"M=D+M",
+			"A=A-1",
+			"D=M",
+			"A=A-1",
+			"M=D+M",
 
-		"D=A",
-		"@SP",
-		"M=D+1",
+			"D=A",
+			"@SP",
+			"M=D+1",
+		}
+
+	case ACEq:
+		return []string {
+			commentHeader(instruction),
+			"@SP",
+			"A=M",
+
+			"A=A-1",
+			"D=M",
+			"A=A-1",
+			"D=D-M;",
+
+			"@JMP-eq",
+			"D; JEQ",
+			"D=1",
+			"@JMP-end",
+			"(JMP-eq)",
+			"D=D-1",
+
+			"(JMP-end)",
+			"@SP",
+			"A=M-1",
+			"A=A-1",
+			"M=D",
+			"D=A+1",
+			"@SP",
+			"M=D",
+		}
+
+	case ACLt:
+		return []string {
+			commentHeader(instruction),
+			"@SP",
+			"A=M",
+
+			"MD=D-M;",
+			"@JMP-lt",
+			"D; JEQ",
+			"D=1",
+			"(JMP-lt)",
+			"D=D-1",
+
+			"@SP",
+			"AM=M-1",
+			"A=A-1",
+			"M=D",
+		}
 	}
+
+	return []string{}
 }
 
 
@@ -56,3 +108,13 @@ func commentHeader(instruction Instruction) string {
 	return "// " + instruction.String()
 }
 
+
+func insertJumpIndexes(row string, i int) string {
+	if row[0] == '@' || row[0] == '(' {
+		if len(row) > 3 && row[1:4] == "JMP" {
+			return row[0:4] + strconv.Itoa(i) + row[4:]
+		}
+	}
+
+	return row
+}

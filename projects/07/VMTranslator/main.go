@@ -20,16 +20,21 @@ func main() {
 
 	parser := NewParser(scanner)
 
+	var instructionIndex int;
 	for {
 		instruction := parser.NextInstruction()
 		if instruction.command == CommandTerminate {
 			break
 		}
 
+		instructionIndex++
+
 		asmInstructions := translate(instruction)
 		for _, row := range asmInstructions {
+			row = insertJumpIndexes(row, instructionIndex)
 			fmt.Println(row)
 			outfile.WriteString(row + "\n")
+
 		}
 
 	}

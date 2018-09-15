@@ -54,3 +54,59 @@ func TestTranslateCommandACAdd(t *testing.T) {
 	}
 
 }
+
+func TestTranslateCommandACEq(t *testing.T) {
+	instruction := NewInstruction(CommandArithmetic, string(ACEq), -1)
+
+	result := translate(instruction)
+
+	expected := []string {
+		"// " + instruction.String(),
+		"@SP",
+		"A=M",
+		"MD=D-M;",
+		"@JMP-eq",
+		"D; JEQ",
+		"@JMP-end",
+		"D=0; JMP",
+		"(JMP-eq)",
+		"D=D-1",
+		"(JMP-end)",
+		"@SP",
+		"AM=M-1",
+		"A=A-1",
+		"M=D",
+	}
+
+	for i, val := range result {
+		assertEqual(t, val, expected[i], "")
+	}
+
+}
+
+func TestTranslateCommandACLt(t *testing.T) {
+	instruction := NewInstruction(CommandArithmetic, string(ACEq), -1)
+
+	result := translate(instruction)
+
+	expected := []string {
+		"// " + instruction.String(),
+		"@SP",
+		"A=M",
+		"MD=D-M;",
+		"@JMP-eq",
+		"D; JEQ",
+		"D=0",
+		"(JMP-eq)",
+		"D=D-1",
+		"@SP",
+		"AM=M-1",
+		"A=A-1",
+		"M=D",
+	}
+
+	for i, val := range result {
+		assertEqual(t, val, expected[i], "")
+	}
+
+}
