@@ -33,10 +33,9 @@ func main() {
 	outfile := createFile(outputFilename)
 	defer outfile.Close()
 
-	var instructionIndex int;
+	var instructionIndex int
 	for _, infilePath := range inFiles {
 		infile := openFile(infilePath)
-		defer infile.Close()
 
 		_, fileName := filepath.Split(infilePath)
 		codeWriterPrefix := re.ReplaceAllString(fileName, "")
@@ -59,6 +58,8 @@ func main() {
 			}
 
 		}
+
+		infile.Close()
 	}
 }
 

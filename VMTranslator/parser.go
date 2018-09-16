@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"errors"
 	"strconv"
+	"unicode"
 )
 
 type ParserState int
@@ -62,8 +63,7 @@ func generateTokens(instruction string, initialState ParserState) (tokens []stri
 
 	instructionLength := len(instruction)
 	for i, char := range instruction {
-		switch char {
-		case '/':
+		if char == '/' {
 			if state == Taking {
 				tokens = append(tokens, string(buffer.Bytes()))
 				buffer = new(bytes.Buffer)
@@ -78,7 +78,7 @@ func generateTokens(instruction string, initialState ParserState) (tokens []stri
 				continue
 			}
 
-			if i == instructionLength - 1 {
+			if i == instructionLength-1 {
 				return tokens, state, errors.New("syntax error, stray ending slash")
 			} else {
 				nextChar := instruction[i+1]
@@ -88,22 +88,15 @@ func generateTokens(instruction string, initialState ParserState) (tokens []stri
 					state = LookingForCommentEnd
 				}
 			}
-			break
 
-
-		case ' ':
+		} else if unicode.IsSpace(char) {
 			if state == Taking {
 				tokens = append(tokens, string(buffer.Bytes()))
 				buffer = new(bytes.Buffer)
 
 				state = LookingForContext
 			}
-			break
-
-
-
-
-		default:
+		} else {
 			if state == LookingForContext {
 				state = Taking
 			}
@@ -115,7 +108,6 @@ func generateTokens(instruction string, initialState ParserState) (tokens []stri
 			if i == instructionLength - 1 {
 				tokens = append(tokens, string(buffer.Bytes()))
 			}
-			break
 		}
 
 		if state == Exiting {
