@@ -20,9 +20,8 @@ func TestTranslateCommandPushConstant(t *testing.T) {
 		"@SP",
 		"A=M",
 		"M=D",
-		"D=A",
 		"@SP",
-		"M=D+1",
+		"M=M+1",
 	}
 
 	for i, val := range result {

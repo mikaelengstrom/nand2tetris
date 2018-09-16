@@ -6,20 +6,145 @@ package main
 
 import "strconv"
 
-func translatePush(instruction Instruction) []string {
-	return []string {
-		commentHeader(instruction),
-		"@" + strconv.Itoa(instruction.arg2),
-		"D=A",
 
-		"@SP",
-		"A=M",
-		"M=D",
-
-		"D=A",
-		"@SP",
-		"M=D+1",
+func translate (instruction Instruction) []string {
+	switch instruction.command {
+	case CommandPush:
+		return translatePush(instruction)
+	case CommandPop:
+		return translatePop(instruction)
+	case CommandArithmetic:
+		return translateArithmetic(instruction)
 	}
+
+	return []string{}
+}
+
+func translatePush(instruction Instruction) []string {
+	register := stringToMemoryRegister(instruction.arg1)
+	switch register {
+	case MRConstant:
+		return []string {
+			commentHeader(instruction),
+			"@" + strconv.Itoa(instruction.arg2),
+			"D=A",
+
+			"@SP",
+			"A=M",
+			"M=D",
+
+			"@SP",
+			"M=M+1",
+		}
+	case MRLocal, MRArgument, MRThat, MRThis:
+		baseAddressSymbols := map[MemoryRegister]string{
+			MRLocal: "LCL",
+			MRArgument : "ARG",
+			MRThat: "THAT",
+			MRThis: "THIS",
+		}
+
+		return []string {
+			commentHeader(instruction),
+			"@" + strconv.Itoa(instruction.arg2),
+			"D=A",
+
+			"@" + baseAddressSymbols[register],
+			"A=D+M",
+			"D=M",
+
+			"@SP",
+			"A=M",
+			"M=D",
+
+			"@SP",
+			"M=M+1",
+		}
+
+
+		break
+	case MRTemp:
+		return []string {
+			commentHeader(instruction),
+			"@Temp" + strconv.Itoa(instruction.arg2),
+			"D=M",
+
+			"@SP",
+			"A=M",
+			"M=D",
+
+			"@SP",
+			"M=M+1",
+		}
+
+
+		break
+	case MRStatic:
+		// @Filename.somerunningindex - whatever that means... @todo
+	}
+
+	return []string{}
+}
+
+func translatePop(instruction Instruction) []string {
+	register := stringToMemoryRegister(instruction.arg1)
+	switch register {
+	case MRConstant:
+		// Pushing to constant does not make sense, hence output nada
+		return []string {}
+	case MRLocal, MRArgument, MRThat, MRThis:
+		baseAddressSymbols := map[MemoryRegister]string{
+			MRLocal: "LCL",
+			MRArgument : "ARG",
+			MRThat: "THAT",
+			MRThis: "THIS",
+		}
+
+		return []string {
+			// "pop local 3" – Move the top of the stack (constant) to local index 3
+			commentHeader(instruction),
+
+			// Set R14 to @LCL + 3
+			"@" + strconv.Itoa(instruction.arg2),
+			"D=A",
+			"@" + baseAddressSymbols[register],
+			"D=D+M",
+			"@R14",
+			"M=D",
+
+			// decrease stack pointer
+			"@SP",
+			"AM=M-1",
+
+			// Store M[@SP] -> M[R14]
+			"D=M",
+			"@R14",
+			"A=M",
+			"M=D",
+		}
+
+
+		break
+	case MRTemp:
+		return []string {
+			commentHeader(instruction),
+			// decrease stack pointer
+			"@SP",
+			"AM=M-1",
+
+			// Store M[@SP] -> M[Temp[arg2]]
+			"D=M",
+			"@R" + strconv.Itoa(instruction.arg2 + 5),
+			"M=D",
+		}
+
+
+		break
+	case MRStatic:
+		// @Filename.somerunningindex - whatever that means... @todo
+	}
+
+	return []string{}
 }
 
 func translateArithmetic(instruction Instruction) []string {
@@ -192,23 +317,9 @@ func translateArithmetic(instruction Instruction) []string {
 	return []string{}
 }
 
-
-func translate (instruction Instruction) []string {
-	switch instruction.command {
-	case CommandPush:
-		return translatePush(instruction)
-	case CommandArithmetic:
-		return translateArithmetic(instruction)
-		break
-	}
-
-	return []string{}
-}
-
 func commentHeader(instruction Instruction) string {
 	return "// " + instruction.String()
 }
-
 
 func insertJumpIndexes(row string, i int) string {
 	if row[0] == '@' || row[0] == '(' {

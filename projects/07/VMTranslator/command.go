@@ -85,3 +85,34 @@ func stringToMemoryAccessCommand(str string) MemoryAccessCommand {
 
 	return MAUnknownCommand
 }
+
+type MemoryRegister string
+const (
+	MRConstant MemoryRegister = "constant"
+	MRLocal MemoryRegister = "local"
+	MRArgument MemoryRegister = "argument"
+	MRThis MemoryRegister = "this"
+	MRThat MemoryRegister = "that"
+	MRTemp MemoryRegister = "temp"
+	MRStatic MemoryRegister = "static"
+
+	MRUnknownRegister MemoryRegister = "unknown"
+)
+
+func stringToMemoryRegister(str string) MemoryRegister {
+	mrMap := map[string]MemoryRegister {
+		"constant": MRConstant,
+		"local": MRLocal,
+		"argument": MRArgument,
+		"this": MRThis,
+		"that": MRThat,
+		"temp": MRTemp,
+		"static": MRStatic,
+	}
+
+	_, ok := mrMap[str]; if ok {
+		return mrMap[str]
+	}
+
+	return MRUnknownRegister
+}
