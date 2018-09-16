@@ -226,7 +226,7 @@ D=M
 A=A-1
 M=M-D
 // command: push, arg1: temp, arg2: 6
-@Temp6
+@R11
 D=M
 @SP
 A=M

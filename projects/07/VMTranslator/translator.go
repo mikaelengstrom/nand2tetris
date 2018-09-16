@@ -85,7 +85,7 @@ func translatePush(instruction Instruction, staticPrefix string) []string {
 	case MRTemp:
 		return []string {
 			commentHeader(instruction),
-			"@Temp" + strconv.Itoa(instruction.arg2),
+			"@R" + strconv.Itoa(instruction.arg2 + 5),
 			"D=M",
 
 			"@SP",
