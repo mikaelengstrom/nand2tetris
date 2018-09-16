@@ -95,6 +95,7 @@ const (
 	MRThat MemoryRegister = "that"
 	MRTemp MemoryRegister = "temp"
 	MRStatic MemoryRegister = "static"
+	MRPointer MemoryRegister = "pointer"
 
 	MRUnknownRegister MemoryRegister = "unknown"
 )
@@ -108,6 +109,7 @@ func stringToMemoryRegister(str string) MemoryRegister {
 		"that": MRThat,
 		"temp": MRTemp,
 		"static": MRStatic,
+		"pointer": MRPointer,
 	}
 
 	_, ok := mrMap[str]; if ok {

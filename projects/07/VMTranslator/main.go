@@ -2,13 +2,18 @@ package main
 
 import (
 	"bufio"
-	"fmt"
 	"os"
+	"path/filepath"
+	"strings"
 )
 
 func main() {
 	inputFilename := os.Args[1]
 	outputFilename := inputFilename[:len(inputFilename) - 3] + ".asm"
+
+	filePath := strings.Split(filepath.ToSlash(inputFilename), "/")
+	fileName := filePath[len(filePath) - 1]
+
 
 	infile := openFile(inputFilename)
 	defer infile.Close()
@@ -29,12 +34,10 @@ func main() {
 
 		instructionIndex++
 
-		asmInstructions := translate(instruction)
+		asmInstructions := translate(instruction, fileName)
 		for _, row := range asmInstructions {
 			row = insertJumpIndexes(row, instructionIndex)
-			fmt.Println(row)
 			outfile.WriteString(row + "\n")
-
 		}
 
 	}

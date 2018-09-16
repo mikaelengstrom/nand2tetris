@@ -4,15 +4,17 @@
 
 package main
 
-import "strconv"
+import (
+	"strconv"
+)
 
 
-func translate (instruction Instruction) []string {
+func translate (instruction Instruction, staticPrefix string) []string {
 	switch instruction.command {
 	case CommandPush:
-		return translatePush(instruction)
+		return translatePush(instruction, staticPrefix)
 	case CommandPop:
-		return translatePop(instruction)
+		return translatePop(instruction, staticPrefix)
 	case CommandArithmetic:
 		return translateArithmetic(instruction)
 	}
@@ -20,7 +22,7 @@ func translate (instruction Instruction) []string {
 	return []string{}
 }
 
-func translatePush(instruction Instruction) []string {
+func translatePush(instruction Instruction, staticPrefix string) []string {
 	register := stringToMemoryRegister(instruction.arg1)
 	switch register {
 	case MRConstant:
@@ -61,8 +63,25 @@ func translatePush(instruction Instruction) []string {
 			"M=M+1",
 		}
 
+	case MRPointer:
+		destination := "THIS"
+		if instruction.arg2 == 1 {
+			destination = "THAT"
+		}
 
-		break
+		return []string {
+			commentHeader(instruction),
+			"@" + destination,
+			"D=M",
+
+			"@SP",
+			"A=M",
+			"M=D",
+
+			"@SP",
+			"M=M+1",
+		}
+
 	case MRTemp:
 		return []string {
 			commentHeader(instruction),
@@ -77,21 +96,31 @@ func translatePush(instruction Instruction) []string {
 			"M=M+1",
 		}
 
-
-		break
 	case MRStatic:
-		// @Filename.somerunningindex - whatever that means... @todo
+		return []string {
+			commentHeader(instruction),
+			"@" + staticPrefix + "." + strconv.Itoa(instruction.arg2),
+			"D=M",
+
+			"@SP",
+			"A=M",
+			"M=D",
+
+			"@SP",
+			"M=M+1",
+		}
 	}
 
 	return []string{}
 }
 
-func translatePop(instruction Instruction) []string {
+func translatePop(instruction Instruction, staticPrefix string) []string {
 	register := stringToMemoryRegister(instruction.arg1)
 	switch register {
 	case MRConstant:
 		// Pushing to constant does not make sense, hence output nada
 		return []string {}
+
 	case MRLocal, MRArgument, MRThat, MRThis:
 		baseAddressSymbols := map[MemoryRegister]string{
 			MRLocal: "LCL",
@@ -123,8 +152,24 @@ func translatePop(instruction Instruction) []string {
 			"M=D",
 		}
 
+	case MRPointer:
+		destination := "THIS"
+		if instruction.arg2 == 1 {
+			destination = "THAT"
+		}
 
-		break
+		return []string {
+			commentHeader(instruction),
+			// decrease stack pointer
+			"@SP",
+			"AM=M-1",
+
+			// Store M[@SP] -> M[@destination]
+			"D=M",
+			"@" + destination,
+			"M=D",
+		}
+
 	case MRTemp:
 		return []string {
 			commentHeader(instruction),
@@ -138,10 +183,18 @@ func translatePop(instruction Instruction) []string {
 			"M=D",
 		}
 
-
-		break
 	case MRStatic:
-		// @Filename.somerunningindex - whatever that means... @todo
+		return []string{
+			commentHeader(instruction),
+			// decrease stack pointer
+			"@SP",
+			"AM=M-1",
+
+			// Store M[@SP] -> @staticvar
+			"D=M",
+			"@" + staticPrefix + "." + strconv.Itoa(instruction.arg2),
+			"M=D",
+		}
 	}
 
 	return []string{}
