@@ -11,7 +11,7 @@ import (
 func TestTranslateCommandPushConstant(t *testing.T) {
 	instruction := NewInstruction(CommandPush, "constant", 2)
 
-	result := translate(instruction)
+	result := translate(instruction, "x")
 
 	expected := []string {
 		"// " + instruction.String(),
@@ -33,7 +33,7 @@ func TestTranslateCommandPushConstant(t *testing.T) {
 func TestTranslateCommandACAdd(t *testing.T) {
 	instruction := NewInstruction(CommandArithmetic, string(ACAdd), -1)
 
-	result := translate(instruction)
+	result := translate(instruction, "x2")
 
 	expected := []string {
 		"// " + instruction.String(),
@@ -57,7 +57,7 @@ func TestTranslateCommandACAdd(t *testing.T) {
 func TestTranslateCommandACEq(t *testing.T) {
 	instruction := NewInstruction(CommandArithmetic, string(ACEq), -1)
 
-	result := translate(instruction)
+	result := translate(instruction, "x")
 
 	expected := []string {
 		"// " + instruction.String(),
@@ -93,7 +93,7 @@ func TestTranslateCommandACEq(t *testing.T) {
 func TestTranslateCommandACLt(t *testing.T) {
 	instruction := NewInstruction(CommandArithmetic, string(ACLt), -1)
 
-	result := translate(instruction)
+	result := translate(instruction, "x")
 
 	expected := []string {
 		"// " + instruction.String(),

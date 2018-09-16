@@ -2,9 +2,9 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"errors"
 	"strconv"
-	"strings"
 )
 
 type ParserState int
@@ -57,8 +57,7 @@ func (p *Parser) NextInstruction() Instruction{
  * "LookingForContext" for the first run
  */
 func generateTokens(instruction string, initialState ParserState) (tokens []string, state ParserState, err error) {
-	var builder strings.Builder
-
+	buffer := new(bytes.Buffer)
 	state = initialState
 
 	instructionLength := len(instruction)
@@ -66,8 +65,8 @@ func generateTokens(instruction string, initialState ParserState) (tokens []stri
 		switch char {
 		case '/':
 			if state == Taking {
-				tokens = append(tokens, builder.String())
-				builder.Reset()
+				tokens = append(tokens, string(buffer.Bytes()))
+				buffer = new(bytes.Buffer)
 			}
 
 			if state == LookingForCommentEnd {
@@ -94,8 +93,8 @@ func generateTokens(instruction string, initialState ParserState) (tokens []stri
 
 		case ' ':
 			if state == Taking {
-				tokens = append(tokens, builder.String())
-				builder.Reset()
+				tokens = append(tokens, string(buffer.Bytes()))
+				buffer = new(bytes.Buffer)
 
 				state = LookingForContext
 			}
@@ -110,11 +109,11 @@ func generateTokens(instruction string, initialState ParserState) (tokens []stri
 			}
 
 			if state == Taking {
-				builder.WriteRune(char)
+				buffer.WriteRune(char)
 			}
 
 			if i == instructionLength - 1 {
-				tokens = append(tokens, builder.String())
+				tokens = append(tokens, string(buffer.Bytes()))
 			}
 			break
 		}
