@@ -6,6 +6,7 @@ const (
 	CommandPush
 	CommandPop
 	CommandLabel
+	CommandGoTo
 	CommandIfGoTo
 	CommandFunction
 	CommandReturn
@@ -20,6 +21,7 @@ func stringToCommand(str string) Command {
 		"push": CommandPush,
 		"pop": CommandPop,
 		"label": CommandLabel,
+		"goto": CommandGoTo,
 		"if-goto": CommandIfGoTo,
 		"function": CommandFunction,
 		"return": CommandReturn,
@@ -44,6 +46,8 @@ func (c Command) String() string{
 		return "pop"
 	case CommandLabel:
 		return "label"
+	case CommandGoTo:
+		return "goto"
 	case CommandIfGoTo:
 		return "if-goto"
 	case CommandFunction:

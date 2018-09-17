@@ -19,6 +19,8 @@ func translate (instruction Instruction, prefix string) []string {
 		return translateArithmetic(instruction)
 	case CommandLabel:
 		return translateLabel(instruction, prefix)
+	case CommandGoTo:
+		return translateGoTo(instruction, prefix)
 	case CommandIfGoTo:
 		return translateIfGoTo(instruction, prefix)
 	}
@@ -382,6 +384,16 @@ func translateLabel(instruction Instruction, lblPrefix string) []string {
 	return []string {
 		commentHeader(instruction),
 		"(" + label + ")",
+	}
+}
+
+func translateGoTo(instruction Instruction, lblPrefix string) []string {
+	label := lblPrefix + "." + instruction.arg1
+
+	return []string {
+		commentHeader(instruction),
+		"@" + label,
+		"0; JMP",
 	}
 }
 
