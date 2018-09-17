@@ -123,33 +123,25 @@ func generateTokens(instruction string, initialState ParserState) (tokens []stri
 }
 
 func tokenize(tokens []string) Instruction{
-	command := CommandDoesNotExist
-	arg1 := ""
-	arg2 := -1
-
 	ac := stringToArithmeticCommand(tokens[0])
 	if ac != ACUnknownCommand {
-		command = CommandArithmetic
-		arg1 = tokens[0]
+		return NewInstruction(CommandArithmetic, tokens[0], -1)
 	}
 
-	ma := stringToMemoryAccessCommand(tokens[0])
-	if ma != MAUnknownCommand {
-		i, e := strconv.Atoi(tokens[2])
-		if e != nil {
-			panic(e)
+	var command Command
+	var arg1 string
+	var arg2 int
+
+	switch command = stringToCommand(tokens[0]); {
+	default:
+		if len(tokens) > 1 {
+			arg1 = tokens[1]
 		}
 
-		arg1 = tokens[1]
-		arg2 = i
-
-		if ma == MAPop {
-			command = CommandPop
-		} else {
-			command = CommandPush
+		if len(tokens) > 2 {
+			arg2, _ = strconv.Atoi(tokens[2])
 		}
 	}
-
 
 	return NewInstruction(command, arg1, arg2)
 }

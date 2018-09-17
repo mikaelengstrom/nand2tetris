@@ -19,6 +19,8 @@ D=M
 @R14
 A=M
 M=D
+// command: label, arg1: LOOP_START, arg2: 0
+(BasicLoop.LOOP_START)
 // command: push, arg1: argument, arg2: 0
 @0
 D=A
@@ -113,6 +115,12 @@ A=M
 M=D
 @SP
 M=M+1
+// command: if-goto, arg1: LOOP_START, arg2: 0
+@SP
+AM=M-1
+D=M
+@BasicLoop.LOOP_START
+D; JGT
 // command: push, arg1: local, arg2: 0
 @0
 D=A

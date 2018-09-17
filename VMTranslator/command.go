@@ -6,14 +6,33 @@ const (
 	CommandPush
 	CommandPop
 	CommandLabel
-	CommandGoTo
-	CommandIf
+	CommandIfGoTo
 	CommandFunction
 	CommandReturn
 	CommandCall
 	CommandTerminate
 	CommandDoesNotExist
 )
+
+func stringToCommand(str string) Command {
+	cMap := map[string]Command {
+		"arithmetic": CommandArithmetic,
+		"push": CommandPush,
+		"pop": CommandPop,
+		"label": CommandLabel,
+		"if-goto": CommandIfGoTo,
+		"function": CommandFunction,
+		"return": CommandReturn,
+		"call": CommandCall,
+		"terminate": CommandTerminate,
+	}
+
+	_, ok := cMap[str]; if ok {
+		return cMap[str]
+	}
+
+	return CommandDoesNotExist
+}
 
 func (c Command) String() string{
 	switch c {
@@ -23,6 +42,14 @@ func (c Command) String() string{
 		return "push"
 	case CommandPop:
 		return "pop"
+	case CommandLabel:
+		return "label"
+	case CommandIfGoTo:
+		return "if-goto"
+	case CommandFunction:
+		return "function"
+	case CommandCall:
+		return "call"
 	case CommandTerminate:
 		return "terminate"
 	default:

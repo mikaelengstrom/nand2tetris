@@ -9,17 +9,24 @@ import (
 )
 
 
-func translate (instruction Instruction, staticPrefix string) []string {
+func translate (instruction Instruction, prefix string) []string {
 	switch instruction.command {
 	case CommandPush:
-		return translatePush(instruction, staticPrefix)
+		return translatePush(instruction, prefix)
 	case CommandPop:
-		return translatePop(instruction, staticPrefix)
+		return translatePop(instruction, prefix)
 	case CommandArithmetic:
 		return translateArithmetic(instruction)
+	case CommandLabel:
+		return translateLabel(instruction, prefix)
+	case CommandIfGoTo:
+		return translateIfGoTo(instruction, prefix)
 	}
 
-	return []string{}
+	return []string{
+		commentHeader(instruction),
+		"NOTIMPLEMENTED",
+	}
 }
 
 func translatePush(instruction Instruction, staticPrefix string) []string {
@@ -368,6 +375,27 @@ func translateArithmetic(instruction Instruction) []string {
 	}
 
 	return []string{}
+}
+
+func translateLabel(instruction Instruction, lblPrefix string) []string {
+	label := lblPrefix + "." + instruction.arg1
+	return []string {
+		commentHeader(instruction),
+		"(" + label + ")",
+	}
+}
+
+func translateIfGoTo(instruction Instruction, lblPrefix string) []string {
+	label := lblPrefix + "." + instruction.arg1
+
+	return []string {
+		commentHeader(instruction),
+		"@SP",
+		"AM=M-1",
+		"D=M",
+		"@" + label,
+		"D; JGT",
+	}
 }
 
 func commentHeader(instruction Instruction) string {
