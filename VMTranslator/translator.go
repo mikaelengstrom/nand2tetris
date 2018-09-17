@@ -11,18 +11,25 @@ import (
 
 func translate (instruction Instruction, prefix string) []string {
 	switch instruction.command {
+	case CommandArithmetic:
+		return translateArithmetic(instruction)
+
 	case CommandPush:
 		return translatePush(instruction, prefix)
 	case CommandPop:
 		return translatePop(instruction, prefix)
-	case CommandArithmetic:
-		return translateArithmetic(instruction)
+
 	case CommandLabel:
 		return translateLabel(instruction, prefix)
 	case CommandGoTo:
 		return translateGoTo(instruction, prefix)
 	case CommandIfGoTo:
 		return translateIfGoTo(instruction, prefix)
+
+	case CommandFunction:
+		return translateFunction(instruction, prefix)
+	case CommandReturn:
+		return translateReturn(instruction)
 	}
 
 	return []string{
@@ -406,7 +413,86 @@ func translateIfGoTo(instruction Instruction, lblPrefix string) []string {
 		"AM=M-1",
 		"D=M",
 		"@" + label,
-		"D; JGT",
+		"D; JNZ",
+	}
+}
+
+func translateFunction(instruction Instruction, lblPrefix string) []string {
+	funcName := lblPrefix + "." + instruction.arg1
+	nVars := instruction.arg2 // number of local variables the function uses
+
+	return []string {
+		commentHeader(instruction),
+		"(" + funcName + ")",
+
+		// Set LCL to current SP
+		"@SP",
+		"D=M",
+
+		"@LCL",
+		"M=D",
+
+		// Set SP to LCL + nVars
+		"@" + strconv.Itoa(nVars),
+		"D=D+A",
+		"@SP",
+		"M=D",
+	}
+}
+
+func translateReturn(instruction Instruction) []string {
+	return []string {
+		commentHeader(instruction),
+		// Store return value at M[ARG]
+		"@SP",
+		"A=M-1",
+		"D=M",
+		"@ARG",
+		"A=M",
+		"M=D",
+
+		// Set M[@SP] = M[ARG] + 1
+		"D=A+1",
+		"@SP",
+		"M=D",
+
+		// A/R13 = LCL-1
+		"@LCL",
+		"D=M",
+		"@R13",
+		"AM=D-1",
+
+		// THAT = @R13; R13--
+		"D=M",
+		"@THAT",
+		"M=D",
+		"@R13",
+		"AM=M-1",
+
+		// THIS = M[A-1]
+		"D=M",
+		"@THIS",
+		"M=D",
+		"@R13",
+		"AM=M-1",
+
+		// ARG = M[A-1]
+		"D=M",
+		"@ARG",
+		"M=D",
+		"@R13",
+		"AM=M-1",
+
+		// LCL = M[A-1]
+		"D=M",
+		"@LCL",
+		"M=D",
+		"@R13",
+
+		"A=M-1",
+
+		// A = M[A-1] // returnAddress
+		"0;JMP",
 	}
 }
 

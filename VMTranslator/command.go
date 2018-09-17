@@ -52,10 +52,12 @@ func (c Command) String() string{
 		return "if-goto"
 	case CommandFunction:
 		return "function"
-	case CommandCall:
-		return "call"
 	case CommandTerminate:
 		return "terminate"
+	case CommandReturn:
+		return "return"
+	case CommandCall:
+		return "call"
 	default:
 		return "unknown"
 	}
