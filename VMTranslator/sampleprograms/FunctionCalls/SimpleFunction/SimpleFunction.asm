@@ -1,13 +1,18 @@
 // command: function, arg1: SimpleFunction.test, arg2: 2
 (SimpleFunction.SimpleFunction.test)
-@SP
-D=M
-@LCL
-M=D
 @2
-D=D+A
+D=A
+(JMP1-loop)
+@JMP1-initialized
+D=D-1; JLT
 @SP
-M=D
+A=M
+M=0
+@SP
+M=M+1
+@JMP1-loop
+0; JMP
+(JMP1-initialized)
 // command: push, arg1: local, arg2: 0
 @0
 D=A

@@ -65,7 +65,10 @@ func generateTokens(instruction string, initialState ParserState) (tokens []stri
 	for i, char := range instruction {
 		if char == '/' {
 			if state == Taking {
-				tokens = append(tokens, string(buffer.Bytes()))
+				token := string(buffer.Bytes())
+				if len(token) > 0 {
+					tokens = append(tokens, token)
+				}
 				buffer = new(bytes.Buffer)
 			}
 

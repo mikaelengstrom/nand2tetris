@@ -30,6 +30,8 @@ func translate (instruction Instruction, prefix string) []string {
 		return translateFunction(instruction, prefix)
 	case CommandReturn:
 		return translateReturn(instruction)
+	case CommandCall:
+		return translateCall(instruction, prefix)
 	}
 
 	return []string{
@@ -419,30 +421,41 @@ func translateIfGoTo(instruction Instruction, lblPrefix string) []string {
 
 func translateFunction(instruction Instruction, lblPrefix string) []string {
 	funcName := lblPrefix + "." + instruction.arg1
-	nVars := instruction.arg2 // number of local variables the function uses
+	nVars := strconv.Itoa(instruction.arg2) // number of local variables the function uses
 
 	return []string {
 		commentHeader(instruction),
 		"(" + funcName + ")",
+		"@" + nVars,
+		"D=A",
 
-		// Set LCL to current SP
+		"(JMP-loop)",
+		"@JMP-initialized",
+		"D=D-1; JLT",
 		"@SP",
-		"D=M",
-
-		"@LCL",
-		"M=D",
-
-		// Set SP to LCL + nVars
-		"@" + strconv.Itoa(nVars),
-		"D=D+A",
+		"A=M",
+		"M=0",
 		"@SP",
-		"M=D",
+		"M=M+1",
+		"@JMP-loop",
+		"0; JMP",
+		"(JMP-initialized)",
 	}
 }
 
 func translateReturn(instruction Instruction) []string {
 	return []string {
 		commentHeader(instruction),
+		// Store returnAddress in (LCL-5) in R14
+		"@5",
+		"D=A",
+		"@LCL",
+		"A=M",
+		"A=A-D",
+		"D=M",
+		"@R14",
+		"M=D",
+
 		// Store return value at M[ARG]
 		"@SP",
 		"A=M-1",
@@ -451,7 +464,7 @@ func translateReturn(instruction Instruction) []string {
 		"A=M",
 		"M=D",
 
-		// Set M[@SP] = M[ARG] + 1
+		// Set SP to ARG+1
 		"D=A+1",
 		"@SP",
 		"M=D",
@@ -488,11 +501,85 @@ func translateReturn(instruction Instruction) []string {
 		"@LCL",
 		"M=D",
 		"@R13",
-
 		"A=M-1",
 
-		// A = M[A-1] // returnAddress
-		"0;JMP",
+		// Jump to returnAddress (R14)
+		"@R14",
+		"A=M",
+		"0; JMP",
+	}
+}
+
+func translateCall(instruction Instruction, prefix string) []string {
+	nArgs := instruction.arg2
+	funcName := prefix + "." + instruction.arg1
+	return []string {
+		commentHeader(instruction),
+		// Store ARG-to-be in R13, (SP - nArgs)
+		"@SP",
+		"D=M",
+
+		"@" + strconv.Itoa(nArgs),
+		"D=D-A",
+
+		"@R13",
+		"M=D",
+
+		// Set M[SP] -> @JMP-return-addresss
+		"@JMP-return-address",
+		"D=A",
+		"@SP",
+		"A=M",
+		"M=D",
+
+		// Set M[SP++] -> LCL
+		"@LCL",
+		"D=M",
+		"@SP",
+		"AM=M+1",
+		"M=D",
+
+		// Set M[SP++] -> ARG
+		"@ARG",
+		"D=M",
+		"@SP",
+		"AM=M+1",
+		"M=D",
+
+		// Set M[SP++] -> THIS
+		"@THIS",
+		"D=M",
+		"@SP",
+		"AM=M+1",
+		"M=D",
+
+		// Set M[SP++] -> THAT
+		"@THAT",
+		"D=M",
+		"@SP",
+		"AM=M+1",
+		"M=D",
+
+		// LCL := SP
+		"D=A+1",
+		"@LCL",
+		"M=D",
+
+		"@SP",
+		"M=M+1",
+
+		// ARG := R13
+		"@R13",
+		"D=M",
+		"@ARG",
+		"M=D",
+
+		// Jump to @funcName
+		"@" + funcName,
+		"0; JMP",
+
+		// Store return address: (JMP-return-address)
+		"(JMP-return-address)",
 	}
 }
 
