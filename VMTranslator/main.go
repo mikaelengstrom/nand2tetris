@@ -29,11 +29,16 @@ func main() {
 		outputFilename = filepath.Join(fileNameOrDirectory, dirName + ".asm")
 	}
 
+	instructionIndex := 0
 
 	outfile := createFile(outputFilename)
 	defer outfile.Close()
 
-	var instructionIndex int
+	for _, row := range getBootstrapCode() {
+		row = insertJumpIndexes(row, instructionIndex)
+		outfile.WriteString(row + "\n")
+	}
+
 	for _, infilePath := range inFiles {
 		infile := openFile(infilePath)
 
@@ -61,6 +66,20 @@ func main() {
 
 		infile.Close()
 	}
+}
+
+func getBootstrapCode() []string {
+	setInitialAddresses := []string{
+		// SP256
+		"@256",
+		"D=A",
+		"@SP",
+		"M=D",
+	}
+
+	callOSInit := translate(NewInstruction(CommandCall, "Sys.init", 0), "bootstrap")
+
+	return append(setInitialAddresses, callOSInit...)
 }
 
 

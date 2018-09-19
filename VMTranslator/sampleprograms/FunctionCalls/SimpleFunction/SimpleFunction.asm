@@ -1,5 +1,53 @@
+@256
+D=A
+@SP
+M=D
+// command: call, arg1: Sys.init, arg2: 0
+@SP
+D=M
+@0
+D=D-A
+@R13
+M=D
+@JMP0-return-address
+D=A
+@SP
+A=M
+M=D
+@LCL
+D=M
+@SP
+AM=M+1
+M=D
+@ARG
+D=M
+@SP
+AM=M+1
+M=D
+@THIS
+D=M
+@SP
+AM=M+1
+M=D
+@THAT
+D=M
+@SP
+AM=M+1
+M=D
+D=A+1
+@LCL
+M=D
+@SP
+M=M+1
+@R13
+D=M
+@ARG
+M=D
+@Sys.init
+0; JMP
+(JMP0-return-address)
 // command: function, arg1: SimpleFunction.test, arg2: 2
-(SimpleFunction.SimpleFunction.test)
+(SimpleFunction.test)
 @2
 D=A
 (JMP1-loop)
@@ -88,6 +136,14 @@ D=M
 A=A-1
 M=M-D
 // command: return, arg1: , arg2: 0
+@5
+D=A
+@LCL
+A=M
+A=A-D
+D=M
+@R14
+M=D
 @SP
 A=M-1
 D=M
@@ -121,4 +177,6 @@ D=M
 M=D
 @R13
 A=M-1
-0;JMP
+@R14
+A=M
+0; JMP

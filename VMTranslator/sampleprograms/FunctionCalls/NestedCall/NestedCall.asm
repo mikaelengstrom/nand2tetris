@@ -1,5 +1,53 @@
+@256
+D=A
+@SP
+M=D
+// command: call, arg1: Sys.init, arg2: -1
+@SP
+D=M
+@-1
+D=D-A
+@R13
+M=D
+@JMP0-return-address
+D=A
+@SP
+A=M
+M=D
+@LCL
+D=M
+@SP
+AM=M+1
+M=D
+@ARG
+D=M
+@SP
+AM=M+1
+M=D
+@THIS
+D=M
+@SP
+AM=M+1
+M=D
+@THAT
+D=M
+@SP
+AM=M+1
+M=D
+D=A+1
+@LCL
+M=D
+@SP
+M=M+1
+@R13
+D=M
+@ARG
+M=D
+@Sys.init
+0; JMP
+(JMP0-return-address)
 // command: function, arg1: Sys.init, arg2: 0
-(Sys.Sys.init)
+(Sys.init)
 @0
 D=A
 (JMP1-loop)
@@ -82,7 +130,7 @@ M=M+1
 D=M
 @ARG
 M=D
-@Sys.Sys.main
+@Sys.main
 0; JMP
 (JMP6-return-address)
 // command: pop, arg1: temp, arg2: 1
@@ -97,7 +145,7 @@ M=D
 @Sys.LOOP
 0; JMP
 // command: function, arg1: Sys.main, arg2: 5
-(Sys.Sys.main)
+(Sys.main)
 @5
 D=A
 (JMP10-loop)
@@ -251,7 +299,7 @@ M=M+1
 D=M
 @ARG
 M=D
-@Sys.Sys.add12
+@Sys.add12
 0; JMP
 (JMP22-return-address)
 // command: pop, arg1: temp, arg2: 0
@@ -401,7 +449,7 @@ A=M-1
 A=M
 0; JMP
 // command: function, arg1: Sys.add12, arg2: 0
-(Sys.Sys.add12)
+(Sys.add12)
 @0
 D=A
 (JMP34-loop)

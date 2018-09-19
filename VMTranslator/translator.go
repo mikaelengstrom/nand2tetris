@@ -415,12 +415,13 @@ func translateIfGoTo(instruction Instruction, lblPrefix string) []string {
 		"AM=M-1",
 		"D=M",
 		"@" + label,
-		"D; JNZ",
+		"D; JNE",
 	}
 }
 
 func translateFunction(instruction Instruction, lblPrefix string) []string {
-	funcName := lblPrefix + "." + instruction.arg1
+	//funcName := lblPrefix + "." + instruction.arg1
+	funcName := instruction.arg1
 	nVars := strconv.Itoa(instruction.arg2) // number of local variables the function uses
 
 	return []string {
@@ -512,7 +513,8 @@ func translateReturn(instruction Instruction) []string {
 
 func translateCall(instruction Instruction, prefix string) []string {
 	nArgs := instruction.arg2
-	funcName := prefix + "." + instruction.arg1
+	//funcName := prefix + "." + instruction.arg1
+	funcName := instruction.arg1
 	return []string {
 		commentHeader(instruction),
 		// Store ARG-to-be in R13, (SP - nArgs)
