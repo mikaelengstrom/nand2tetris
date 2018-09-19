@@ -34,9 +34,13 @@ func main() {
 	outfile := createFile(outputFilename)
 	defer outfile.Close()
 
-	for _, row := range getBootstrapCode() {
-		row = insertJumpIndexes(row, instructionIndex)
-		outfile.WriteString(row + "\n")
+	// Only generate bootstrap code when compiling multiple files.
+	// The bootstrap does not really make sense for single files
+	if file.Mode().IsDir() {
+		for _, row := range getBootstrapCode() {
+			row = insertJumpIndexes(row, instructionIndex)
+			outfile.WriteString(row + "\n")
+		}
 	}
 
 	for _, infilePath := range inFiles {

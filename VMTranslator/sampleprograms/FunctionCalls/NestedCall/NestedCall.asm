@@ -2,10 +2,10 @@
 D=A
 @SP
 M=D
-// command: call, arg1: Sys.init, arg2: -1
+// command: call, arg1: Sys.init, arg2: 0
 @SP
 D=M
-@-1
+@0
 D=D-A
 @R13
 M=D
