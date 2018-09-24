@@ -1,0 +1,113 @@
+class Game{
+    field Snake mSnake;
+    field GameBoard mBoard;
+    field Point mApple;
+    field int mGameSpeed, mScore;
+
+    constructor Game new() {
+        let mSnake = Snake.new();
+        let mBoard = GameBoard.new(mSnake);
+        let mApple = Point.new(3, 4);
+        let mScore = 0;
+
+        // This is acutally the sys-wait time per cycle, so lower is faster
+        let mGameSpeed = 100; 
+
+        return this;
+    }
+
+    method void dispose() {
+        do mBoard.dispose();
+        do mSnake.dispose();
+        do mApple.dispose();
+
+        do Memory.deAlloc(this);
+        return;
+    }
+
+    method void run() {
+        var bool isAlive;
+        var Point nextMovementPoint, erasePoint;
+        var int directionChange;
+        var char keyDown;
+
+        let isAlive = true;
+
+        do mBoard.drawBounds();
+        do mBoard.drawSnake(mSnake);
+        do mBoard.drawApple(mApple);
+        do mBoard.drawLeftSide();
+        do mBoard.drawScore(mScore);
+
+        while (isAlive) {
+            let keyDown = Keyboard.keyPressed();
+
+            let directionChange = 0;
+
+            // Arrow bindings
+            if (keyDown = 130) { let directionChange = 1; } // Left
+            if (keyDown = 131) { let directionChange = 2; } // Up
+            if (keyDown = 132) { let directionChange = 3; } // Right
+            if (keyDown = 133) { let directionChange = 4; } // Down
+
+            // VI-bindings
+            if (keyDown = 72) { let directionChange = 1; } // Left
+            if (keyDown = 75) { let directionChange = 2; } // Up
+            if (keyDown = 76) { let directionChange = 3; } // Right
+            if (keyDown = 74) { let directionChange = 4; } // Down
+
+            let nextMovementPoint = mSnake.move(directionChange);
+
+            // Die conditions
+            if (mSnake.hasPointInTail(nextMovementPoint)) { let isAlive = false; }
+            if (~(mBoard.isInBounds(nextMovementPoint))) { let isAlive = false; }
+
+            // If we are still alive, eat, move and draw stuff
+            if (isAlive) {
+                if (mApple.isEqual(nextMovementPoint)) {
+                    let mScore = mScore + 1;
+
+                    do moveApplePoint(mApple);
+
+                    do mBoard.drawApple(mApple);
+                    do mBoard.drawScore(mScore);
+                } else {
+                    let erasePoint = mSnake.popLastPoint();
+                }
+
+                do mBoard.drawSquare(nextMovementPoint);
+                do mBoard.clearSquare(erasePoint);
+
+                do Sys.wait(mGameSpeed);
+            }
+        }
+
+        return;
+    }
+
+    method Point moveApplePoint(Point point) {
+        // This is a really quirky way to get a new point.
+        // But since I do not have either modulus or random
+        // it was the best i could come up with. #goodenough :)
+        var int x, y;
+        var bool moving;
+
+        let moving = true;
+        while (moving) {
+            let x = point.getX() - 5;
+            let y = point.getY() - 5;
+
+            if (x < 0) { let x = x + 17; }
+            if (y < 0) { let y = y + 17; }
+
+            do point.setX(x);
+            do point.setY(y);
+
+            if (~(mSnake.hasPoint(point))) {
+                let moving = false;
+            }
+        }
+
+        return point;
+    }
+}

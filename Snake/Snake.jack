@@ -1,0 +1,103 @@
+class Snake {
+    // integer representing the current direction of the snake.
+    // 1: left, 2: top, 3: right, 4: bottom
+    field int mDirection;
+
+    // A queue of points containing the snake tail positions
+    field SnakeTail mTail;
+
+    // Hacky variable needed because SnakeTail.dequeue creates a new point
+    // and i want to prevent memory leeks
+    field Point mLastDequeue;
+
+    constructor Snake new() {
+        let mDirection = 1;
+
+        // Initial snake, 3 squares wide in the center
+        let mTail = SnakeTail.new(
+                        Point.new(20, 14), SnakeTail.new(
+                        Point.new(21, 14), SnakeTail.new(
+                        Point.new(22, 14), null)));
+
+        return this;
+    }
+
+    method void dispose() {
+        do mTail.dispose();
+        if (~(mLastDequeue = null)) {
+            do mLastDequeue.dispose();
+        }
+        do Memory.deAlloc(this);
+        return;
+    }
+
+    method SnakeTail getTail() {
+        return mTail;
+    }
+
+    method Point move(int nextDirection) {
+        // Moves the snake in given direction in case that is
+        // not straight backward. If so, continue forward.
+        if (isValidDirectionChange(nextDirection)) {
+            let mDirection = nextDirection;
+        }
+
+        return moveForward();
+    }
+
+    method bool isValidDirectionChange(int nextDirection) {
+        // Checks wether the new direction is backward, which is not vaild
+        if (mDirection + 2 = nextDirection) { return false; }
+        if (mDirection - 2 = nextDirection) { return false; }
+        if (nextDirection = 0) { return false; }
+        return true;
+    }
+
+    method Point moveForward() {
+        // Move the snake 1 square in mDirection
+        var Point head, nextPoint;
+        var int x, y;
+
+        let head = mTail.getPoint();
+        let x = head.getX();
+        let y = head.getY();
+
+        // 1: left, 2: top, 3: right, 4: bottom
+        if (mDirection = 1) { let nextPoint = Point.new(x - 1, y); }
+        if (mDirection = 2) { let nextPoint = Point.new(x, y - 1); }
+        if (mDirection = 3) { let nextPoint = Point.new(x + 1, y); }
+        if (mDirection = 4) { let nextPoint = Point.new(x, y + 1); }
+
+        let mTail = SnakeTail.new(nextPoint, mTail);
+
+        return nextPoint;
+    }
+
+    method bool hasPoint(Point point) {
+        // Checks wether arg point exists in the whole snake-tail
+        return mTail.in(point);
+    }
+
+    method bool hasPointInTail(Point point) {
+        // Checks wether arg point exists in the snake-tail´s tail.
+        // that is, everything except the snakes 'head'
+
+        var SnakeTail tailTail; // The tail of a tail :)
+        let tailTail = mTail.getNext();
+        return tailTail.in(point);
+    }
+
+    method Point popLastPoint() {
+        // Removes the last point in the snake tail (used during movement)
+
+        // Kind of a hack, but i dont know how else to
+        // prevent memory leeks from the newly constructed point
+        // in SnakeTail.dequeue
+        if (~(mLastDequeue = null)) {
+            do mLastDequeue.dispose();
+        }
+
+        let mLastDequeue = mTail.dequeue();
+        return mLastDequeue;
+    }
+}

@@ -1,0 +1,80 @@
+// A queue-like data-stucture representing the snakes tail
+// You may add to the front or remove from the tail.
+//
+// Recursive structure, create like:
+// SnakeTail.new(Point.new(1,1), SnakeTail.new(..., null))
+
+class SnakeTail {
+    field Point mPoint;
+    field SnakeTail mNext;
+
+    constructor SnakeTail new(Point point, SnakeTail next) {
+        let mPoint = point;
+        let mNext = next; 
+
+        return this;
+    }
+
+    // Getters/Setters
+    method Point getPoint() { return mPoint; }
+    method SnakeTail getNext() { return mNext; }
+    method void setNext(SnakeTail next) {
+        let mNext = next;
+        return;
+    }
+
+    // This method does not really handle empty
+    // tails, but since I have never seen a snake
+    // without a tail, i don´t really bother :)
+    method Point dequeue() {
+        var SnakeTail next, beforePrev, prev;
+        var Point lastPoint;
+        let prev = this;
+        let next = getNext();
+
+        while (~(next = null)) {
+            let beforePrev = prev;
+            let prev = next;
+            let next = next.getNext();
+        }
+
+        let lastPoint = prev.getPoint();
+        // Copy, since old reference will be disposed before return
+        // This might cause a memory leek in case caller 
+        // does not handle disposing of the point
+        let lastPoint = Point.new(lastPoint.getX(), lastPoint.getY());
+
+        do beforePrev.setNext(null);
+        do prev.dispose();
+
+        return lastPoint;
+    }
+
+    // Disposes by recursively disposing its tail. If someone
+    // is very good at this game we might cause a stack overflow :)
+    method void dispose() {
+        if (~(mNext = null)) {
+            do mPoint.dispose();
+            do mNext.dispose();
+        }
+        do Memory.deAlloc(this);
+        return;
+    }
+
+    method bool in(Point p1) {
+        var SnakeTail next;
+        var Point p2;
+
+        let next = this;
+        while (~(next = null)) {
+            let p2 = next.getPoint();
+            if (p1.isEqual(p2)) {
+                return true;
+            }
+
+            let next = next.getNext();
+        }
+
+        return false;
+    }
+}

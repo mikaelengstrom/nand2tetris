@@ -1,0 +1,221 @@
+class GameBoard {
+    field int mLeftPad, mTopPad, mGridWidth, mGridHeight;
+
+    constructor GameBoard new(Snake snake) {
+        // Initializes a 44x28 square grid (each square – 8x8px)
+        let mGridWidth = 32;
+        let mGridHeight = 28;
+
+        // Set the padding of the GameBoard (push it to right);
+        let mLeftPad = 8 * 30;
+        let mTopPad = 8 * 2;
+
+        return this;
+    }
+
+    method void drawBounds(){
+        // Draws the outer bounds (walls) of the game-grid
+        var int width, height, x, y,
+                x1, x2, y1, y2;
+
+        let width = mGridWidth * 8;
+        let height = mGridHeight * 8;
+
+
+        let x1 = x + mLeftPad;
+        let x2 = x + width + mLeftPad;
+        let y1 = y + mTopPad;
+        let y2 = y + height + mTopPad;
+
+        do Screen.setColor(true);
+        do Screen.drawRectangle(x1 - 2, y1 - 2, x2 + 2, y2 + 2);
+
+        do Screen.setColor(false);
+        do Screen.drawRectangle(x1, y1, x2 , y2);
+
+        return;
+    }
+
+    method void drawSnake(Snake snake) {
+        // Draws the snake on initial game-load
+        var SnakeTail next;
+        var Point point;
+        var int x, y;
+
+        do Screen.setColor(true);
+
+        let next = snake.getTail();
+        while (~(next = null)) {
+            let point = next.getPoint();
+            do drawRect(point);
+            let next = next.getNext();
+        }
+
+        return;
+    }
+
+    method void drawSquare(Point point) {
+        // Draws a black square, essentaly called on every 
+        // snake movement to fill in the "head" of the snake.
+        do Screen.setColor(true);
+        do drawRect(point);
+
+        return;
+    }
+
+    method void clearSquare(Point point) {
+        // Fill whitespace in a square, essentially clearing
+        // the snakes last "tail" position
+        do Screen.setColor(false);
+        do drawRect(point);
+
+        return;
+    }
+
+    method void drawRect(Point point) {
+        // Draw a 8x8 square, will be black or white depending
+        // on what the caller choosed with Screen.setColor
+        var int x, y;
+        let x = point.getX();
+        let y = point.getY();
+
+        do Screen.drawRectangle(
+            x * 8 + mLeftPad,
+            y * 8 + mTopPad,
+            x * 8 + mLeftPad + 8,
+            y * 8 + mTopPad + 8
+        );
+
+        return;
+    }
+
+    method void drawApple(Point point) {
+        // Draws the apple, we never need to erase it because
+        // it will be in its location until the snake eats it 
+        // and fill the space with a tail
+        var int x, y;
+        let x = point.getX() * 8 + mLeftPad;
+        let y = point.getY() * 8 + mTopPad;
+
+        do Screen.setColor(true);
+
+        do Screen.drawRectangle(x, y + 3, x + 8, y + 5);
+        do Screen.drawRectangle(x + 3, y, x + 5, y + 8);
+
+        return;
+    }
+
+    method void drawLeftSide() {
+        // Draws the UI on the left side. A lot of text
+        // and some decorative snake arwork + initial score.
+
+        var int x, y;
+
+        let x = 40;
+        let y = 20;
+
+        do Screen.setColor(true);
+
+        // Snake decoration in top
+        do Screen.drawRectangle(0, y, x + 20, y + 2);
+        do Screen.drawRectangle(x + 20, y - 10, x + 22, y + 2);
+        do Screen.drawRectangle(x + 20, y - 10, x + 25, y - 8);
+        do Screen.drawRectangle(x + 25, y - 10, x + 27, y + 7);
+        do Screen.drawRectangle(x + 27, y + 5, x + 39, y + 7);
+        do Screen.drawRectangle(x + 39, 0, x + 41, y + 7);
+
+        // Snake decoration in bottom
+        let x = 55;
+        let y = 246;
+        do Screen.drawRectangle(x, y, x + 2, 255);
+        do Screen.drawRectangle(x, y, x + 20, y + 2);
+        do Screen.drawRectangle(x + 20, y - 10, x + 22, y + 2);
+        do Screen.drawRectangle(x + 20, y - 10, x + 25, y - 8);
+        do Screen.drawRectangle(x + 25, y - 10, x + 27, y + 5);
+        do Screen.drawRectangle(x + 27, y + 3, x + 39, y + 5);
+        do Screen.drawRectangle(x + 39, y - 30, x + 41, y + 5);
+        do Screen.drawRectangle(x + 41, y - 30, x + 120, y - 28);
+        do Screen.drawRectangle(x + 120, y - 30, x + 122, 255);
+
+        // Print the lefthand text
+        do Output.println();
+        do Output.println();
+        do Output.println();
+        do Output.printString("  Welcome to VI-Snake");
+        do Output.println();
+        do Output.println();
+        do Output.println();
+        do Output.printString("  This is a classic game of");
+        do Output.println();
+        do Output.printString("  snake except that you use");
+        do Output.println();
+        do Output.printString("  vi-bindings (h,j,k,l)");
+        do Output.println();
+        do Output.printString("  instead of arrows. ");
+        do Output.println();
+        do Output.println();
+        do Output.printString("  However, the arrows still");
+        do Output.println();
+        do Output.printString("  works if you find that");
+        do Output.println();
+        do Output.printString("  more enjoyable :)");
+        do Output.println();
+        do Output.println();
+        do Output.println();
+        do Output.printString("  Have fun!");
+        do Output.println();
+        do Output.println();
+        do Output.println();
+        do Output.println();
+
+        // Print score-section
+        do Output.printString("  Score:");
+        do Output.println();
+        do Output.printString("  0000000");
+        return;
+    }
+
+    method void drawScore(int score) {
+        // Updates the last score with new score
+        var String s;
+        var int i;
+        let s = String.new(6);
+
+        // Move the cursor back to where the last score started
+        do s.setInt(score - 1);
+        let i = s.length();
+        while (i > 0) {
+            do Output.backSpace();
+            let i = i - 1;
+        }
+
+        // Print the current score
+        do s.setInt(score);
+        do Output.printString(s);
+
+        do s.dispose();
+        return;
+    }
+
+    method bool isInBounds (Point point) {
+        // Checks wether a Point is inside the bounding rect.
+        // esentially used for collision detection and checking
+        // whether generated apple Point is valid.
+
+        var int x, y;
+        let x = point.getX();
+        let y = point.getY();
+
+        if (x < 0) { return false; }
+        if (y < 0) { return false; }
+        if (x > (mGridWidth - 1)) { return false; }
+        if (y > (mGridHeight - 1)) { return false; }
+
+        return true;
+    }
+
+    method void dispose() {
+        do Memory.deAlloc(this);
+        return;
+    }
+}

@@ -1,0 +1,35 @@
+// A Point – 2D coordinate
+
+class Point {
+    field int mX;
+    field int mY;
+
+    constructor Point new(int x, int y) {
+        let mX = x;
+        let mY = y;
+
+        return this;
+    }
+
+    method int getX() { return mX; }
+    method int getY() { return mY; }
+
+    method void setX(int x) { let mX = x; return; }
+    method void setY(int y) { let mY = y; return; }
+
+    method void dispose() {
+        do Memory.deAlloc(this);
+        return;
+    }
+
+    method bool isEqual (Point p2) {
+        // Checks wether this and p2 is the same position.
+
+        // && and || operators would have been helful. But this
+        // says pretty much `return this.x == p2.x && this.y == p2.y;`
+        if (~(getX() = p2.getX())) { return false; }
+        if (~(getY() = p2.getY())) { return false; }
+
+        return true;
+    }
+}

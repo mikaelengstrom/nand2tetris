@@ -1,0 +1,207 @@
+function Snake.new 0
+push constant 3
+call Memory.alloc 1
+pop pointer 0
+push constant 1
+pop this 0
+push constant 20
+push constant 14
+call Point.new 2
+push constant 21
+push constant 14
+call Point.new 2
+push constant 22
+push constant 14
+call Point.new 2
+push constant 0
+call SnakeTail.new 2
+call SnakeTail.new 2
+call SnakeTail.new 2
+pop this 1
+push pointer 0
+return
+function Snake.dispose 0
+push argument 0
+pop pointer 0
+push this 1
+call SnakeTail.dispose 1
+pop temp 0
+push this 2
+push constant 0
+eq
+not
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push this 2
+call Point.dispose 1
+pop temp 0
+label IF_FALSE0
+push pointer 0
+call Memory.deAlloc 1
+pop temp 0
+push constant 0
+return
+function Snake.getTail 0
+push argument 0
+pop pointer 0
+push this 1
+return
+function Snake.move 0
+push argument 0
+pop pointer 0
+push pointer 0
+push argument 1
+call Snake.isValidDirectionChange 2
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push argument 1
+pop this 0
+label IF_FALSE0
+push pointer 0
+call Snake.moveForward 1
+return
+function Snake.isValidDirectionChange 0
+push argument 0
+pop pointer 0
+push this 0
+push constant 2
+add
+push argument 1
+eq
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push constant 0
+return
+label IF_FALSE0
+push this 0
+push constant 2
+sub
+push argument 1
+eq
+if-goto IF_TRUE1
+goto IF_FALSE1
+label IF_TRUE1
+push constant 0
+return
+label IF_FALSE1
+push argument 1
+push constant 0
+eq
+if-goto IF_TRUE2
+goto IF_FALSE2
+label IF_TRUE2
+push constant 0
+return
+label IF_FALSE2
+push constant 0
+not
+return
+function Snake.moveForward 4
+push argument 0
+pop pointer 0
+push this 1
+call SnakeTail.getPoint 1
+pop local 0
+push local 0
+call Point.getX 1
+pop local 2
+push local 0
+call Point.getY 1
+pop local 3
+push this 0
+push constant 1
+eq
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push local 2
+push constant 1
+sub
+push local 3
+call Point.new 2
+pop local 1
+label IF_FALSE0
+push this 0
+push constant 2
+eq
+if-goto IF_TRUE1
+goto IF_FALSE1
+label IF_TRUE1
+push local 2
+push local 3
+push constant 1
+sub
+call Point.new 2
+pop local 1
+label IF_FALSE1
+push this 0
+push constant 3
+eq
+if-goto IF_TRUE2
+goto IF_FALSE2
+label IF_TRUE2
+push local 2
+push constant 1
+add
+push local 3
+call Point.new 2
+pop local 1
+label IF_FALSE2
+push this 0
+push constant 4
+eq
+if-goto IF_TRUE3
+goto IF_FALSE3
+label IF_TRUE3
+push local 2
+push local 3
+push constant 1
+add
+call Point.new 2
+pop local 1
+label IF_FALSE3
+push local 1
+push this 1
+call SnakeTail.new 2
+pop this 1
+push local 1
+return
+function Snake.hasPoint 0
+push argument 0
+pop pointer 0
+push this 1
+push argument 1
+call SnakeTail.in 2
+return
+function Snake.hasPointInTail 1
+push argument 0
+pop pointer 0
+push this 1
+call SnakeTail.getNext 1
+pop local 0
+push local 0
+push argument 1
+call SnakeTail.in 2
+return
+function Snake.popLastPoint 0
+push argument 0
+pop pointer 0
+push this 2
+push constant 0
+eq
+not
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push this 2
+call Point.dispose 1
+pop temp 0
+label IF_FALSE0
+push this 1
+call SnakeTail.dequeue 1
+pop this 2
+push this 2
+return
