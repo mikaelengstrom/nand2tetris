@@ -58,6 +58,12 @@ class Tokenizer:
     def dump(self, x):
         pass
 
+    def peak_next(self):
+        _cursor = self.in_file.tell()
+        _next = self._get_next_token()
+        self.in_file.seek(_cursor, os.SEEK_SET)
+        return _next
+
     def advance(self):
         while True:
             self.last_token = self._get_next_token()
@@ -113,19 +119,15 @@ class Tokenizer:
                 _return.write(x)
 
     def _drop_row(self):
-        print("DEBUG: Dropping rest of line: {}".format(self.in_file.readline()))
+        self.in_file.readline()
 
     def _drop_to_comment_end(self):
-        drop = b""
         while True:
             char = self._read()
-            drop += char
 
             if char == b'*':
                 if self._peak_next_char() == b'/':
-                    drop += self._read()
-                    print('DEBUG: Dropping {}'.format(
-                        drop.decode('utf-8')))
+                    self._read()
                     break
 
     def _take_to_string_end(self):

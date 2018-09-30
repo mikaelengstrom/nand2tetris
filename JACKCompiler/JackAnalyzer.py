@@ -2,6 +2,7 @@ import glob
 import os
 import sys
 
+from CompilationEngine import CompilationEngine
 from Tokenizer import Tokenizer, TokenizerReachedEndOfFileException
 from XMLWriter import XMLWriter
 
@@ -13,20 +14,30 @@ for source in sources:
     base_name = source[:-len(".jack")]
     in_file = source
     tokenizer_outfile = "{}T.xml".format(base_name)
+    compilation_engine_outfile = "{}.xml".format(base_name)
 
-    with open(tokenizer_outfile, 'w') as f_out:
-        xml_writer = XMLWriter(f_out)
+    with open(tokenizer_outfile, 'w') as tokenizer_file_out:
+        tokenizer_xml_writer = XMLWriter(tokenizer_file_out)
 
-        xml_writer.open_tag('tokens')
+        tokenizer_xml_writer.open_tag('tokens')
 
         with open(in_file, 'rb') as f_in:
             tokenizer = Tokenizer(f_in)
 
             while True:
                 try:
-                    xml_writer.write_token(tokenizer.advance())
+                    tokenizer_xml_writer.write_token(tokenizer.advance())
                 except TokenizerReachedEndOfFileException:
                     print('Reached end')
                     break
 
-        xml_writer.close_tag('tokens')
+        tokenizer_xml_writer.close_tag('tokens')
+
+    with open(compilation_engine_outfile, 'w') as ce_file_out:
+        ce_xml_writer = XMLWriter(ce_file_out)
+
+        with open(in_file, 'rb') as f_in:
+            tokenizer = Tokenizer(f_in)
+            ce = CompilationEngine(tokenizer)
+
+            ce_xml_writer.write_node(ce.compile())
