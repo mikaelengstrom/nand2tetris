@@ -1,4 +1,5 @@
 from functools import reduce
+import html
 
 
 class XMLWriter:
@@ -12,15 +13,15 @@ class XMLWriter:
 
     def open_tag(self, name):
         self.out_file.write('{}<{}>\n'.format(self.indent, name))
-        self._indent_increase()
+        #self._indent_increase()
 
     def close_tag(self, name):
-        self._indent_decrease()
+        #self._indent_decrease()
         self.out_file.write('{}</{}>\n'.format(self.indent, name))
 
     def write_token(self, token):
         self.out_file.write('{}<{}> {} </{}>\n'.format(
-            self.indent, token.type, token.token, token.type))
+            self.indent, token.type, html.escape(token.token), token.type))
 
     def _indent_decrease(self):
         self.indent = self.indent[:-4]

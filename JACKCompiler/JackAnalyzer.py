@@ -19,7 +19,7 @@ for source in sources:
 
         xml_writer.open_tag('tokens')
 
-        with open(in_file) as f_in:
+        with open(in_file, 'rb') as f_in:
             tokenizer = Tokenizer(f_in)
 
             while True:

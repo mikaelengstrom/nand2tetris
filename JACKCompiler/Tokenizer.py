@@ -1,10 +1,18 @@
 import os
+from io import BytesIO
 
 KEYWORDS = [
-    'class', 'constructor', 'function', 'method', 'field', 'static', 'var', 'int', 'char', 'boolean',
-    'void', 'true', 'false', 'null', 'this', 'let', 'do', 'if', 'else', 'while', 'return'
+    b'class', b'constructor', b'function', b'method', b'field',
+    b'static', b'var', b'int', b'char', b'boolean',
+    b'void', b'true', b'false', b'null', b'this',
+    b'let', b'do', b'if', b'else', b'while', b'return'
 ]
-SYMBOLS = ['{', '}', '(', ')', '[', ']', '.', ',', ';', '+', '-', '*', '/', '&', '|', '<', '>', '=', '~']
+SYMBOLS = [
+    b'{', b'}', b'(', b')', b'[', b']',
+    b'.', b',', b';', b'+', b'-', b'*',
+    b'/', b'&', b'|', b'<', b'>', b'=',
+    b'~'
+]
 
 
 class Token:
@@ -18,16 +26,16 @@ class Token:
     TYPE_IDENTIFIER = 'identifier'
 
     def __init__(self, token, type=None):
-        self.token = token
+        self.token = token.decode('utf-8')
 
         # Set type
         if type:
             self.type = type
-        elif _is_symbol(self.token):
+        elif _is_symbol(token):
             self.type = Token.TYPE_SYMBOL
-        elif _is_keyword(self.token):
+        elif _is_keyword(token):
             self.type = Token.TYPE_KEYWORD
-        elif _is_integer_constant(self.token):
+        elif _is_integer_constant(token):
             self.type = Token.TYPE_INTEGER_CONSTANT
         else:
             self.type = Token.TYPE_IDENTIFIER
@@ -46,46 +54,43 @@ class Tokenizer:
 
     def __init__(self, file_stream_in):
         self.in_file = file_stream_in
-        self.last_token = self._get_next_token()
-
-    def is_done(self):
-        return self._peak_next_char() == ''
 
     def dump(self, x):
         pass
 
     def advance(self):
-        _return = self.last_token
         while True:
             self.last_token = self._get_next_token()
-            return _return
+            return self.last_token
 
     def _get_next_token(self):
-        head = self._take_to_next_char()
+        while True:
+            head = self._take_to_next_char()
 
-        # If head is the beginning of comment we drop the rest of the file and return recursive result
-        if head == '/':
-            slash_plus_next_char = ''.join([head, self._peak_next_char()])
-            if _is_multi_line_comment(slash_plus_next_char):
-                self._drop_to_comment_end()
-                return self._get_next_token()
+            # If head is the beginning of a string we take till the string end
+            if head == b'"':
+                return Token(self._take_to_string_end(), Token.TYPE_STRING_CONSTANT)
 
-            elif _is_single_line_comment(slash_plus_next_char):
-                self._drop_row()
-                return self._get_next_token()
+            # If head is the beginning of comment we drop the rest of the comment and fetch a new char
+            if head == b'/':
+                slash_plus_next_char = head + self._peak_next_char()
+                if _is_multi_line_comment(slash_plus_next_char):
+                    self._drop_to_comment_end()
+                    continue
 
-        # If head is the beginning of a string we take till the string end
-        if head == '"':
-            return Token(self._take_to_string_end(), Token.TYPE_STRING_CONSTANT)
+                elif _is_single_line_comment(slash_plus_next_char):
+                    self._drop_row()
+                    continue
 
-        # If it is a symbol, it is a token in itself and we
-        # therefore need no tail
-        if _is_symbol(head):
-            return Token(head)
+            # If it is a symbol, it is a token in itself and we
+            # therefore need no tail
+            if _is_symbol(head):
+                return Token(head)
 
-        tail = self._take_to_next_white_space_or_symbol()
+            tail = self._take_to_next_white_space_or_symbol()
 
-        return Token(''.join([head] + tail))
+            token = head + tail
+            return Token(token)
 
     def _take_to_next_char(self):
         while True:
@@ -94,44 +99,49 @@ class Tokenizer:
                 return x
 
     def _take_to_next_white_space_or_symbol(self):
-        _return = []
+        _return = BytesIO()
         while True:
             x = self._read()
             if x.isspace():
-                return _return
+                _return.seek(0)
+                return _return.read()
             elif _is_symbol(x):
                 self._unread()
-                return _return
+                _return.seek(0)
+                return _return.read()
             else:
-                _return.append(x)
+                _return.write(x)
 
     def _drop_row(self):
         print("DEBUG: Dropping rest of line: {}".format(self.in_file.readline()))
 
     def _drop_to_comment_end(self):
-        drop = []
+        drop = BytesIO()
         while True:
             char = self._read()
-            drop.append(char)
+            drop.write(char)
 
-            if char == '*':
-                if self._peak_next_char() == '/':
-                    drop.append(self._read())
-                    print('DEBUG: Dropping {}'.format(''.join(drop)))
+            if char == b'*':
+                if self._peak_next_char() == b'/':
+                    drop.write(self._read())
+                    drop.seek(0)
+                    print('DEBUG: Dropping {}'.format(
+                        drop.read().decode('utf-8')))
                     break
 
     def _take_to_string_end(self):
-        take = []
+        take = BytesIO()
         while True:
             char = self._read()
-            if char == '"':
-                return ''.join(take)
+            if char == b'"':
+                take.seek(0)
+                return take.read()
 
-            take.append(char)
+            take.write(char)
 
     def _read(self):
         s = self.in_file.read(1)
-        if s == '':
+        if s == b'':
             raise TokenizerReachedEndOfFileException("Tokenizer reached end of file")
 
         return s
@@ -146,11 +156,11 @@ class Tokenizer:
 
 
 def _is_single_line_comment(string):
-    return string[:2] == "//"
+    return string[:2] == b"//"
 
 
 def _is_multi_line_comment(string):
-    return string[:2] == "/*"
+    return string[:2] == b"/*"
 
 
 def _is_symbol(x):
