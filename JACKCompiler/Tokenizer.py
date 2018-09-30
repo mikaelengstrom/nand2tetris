@@ -116,28 +116,26 @@ class Tokenizer:
         print("DEBUG: Dropping rest of line: {}".format(self.in_file.readline()))
 
     def _drop_to_comment_end(self):
-        drop = BytesIO()
+        drop = b""
         while True:
             char = self._read()
-            drop.write(char)
+            drop += char
 
             if char == b'*':
                 if self._peak_next_char() == b'/':
-                    drop.write(self._read())
-                    drop.seek(0)
+                    drop += self._read()
                     print('DEBUG: Dropping {}'.format(
-                        drop.read().decode('utf-8')))
+                        drop.decode('utf-8')))
                     break
 
     def _take_to_string_end(self):
-        take = BytesIO()
+        take = b""
         while True:
             char = self._read()
             if char == b'"':
-                take.seek(0)
-                return take.read()
+                return take
 
-            take.write(char)
+            take += char
 
     def _read(self):
         s = self.in_file.read(1)
